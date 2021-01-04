@@ -1,19 +1,14 @@
+var app = require('express')();
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var port = process.env.PORT || 3000;
 
-const port = process.env.PORT || 3000
-const express = require('express');
-const app = express();
-const http = require('http');
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.render('index.ejs')
-});
-const io = require('socket.io');
-server.listen(port,() => {
-  console.log(`Server running at port `+port);
+app.get('/', function(req, res){
+  res.sendFile(__dirname + '/index.html');
 });
 
-io.sockets.on('connection', function(socket) {
-    socket.on('username', function(username) {
+io.on('connection', function(socket){
+  socket.on('username', function(username) {
         socket.username = username;
         io.emit('is_online', '🔵 <i>' + socket.username + ' joined the chat..</i>');
     });
@@ -25,5 +20,8 @@ io.sockets.on('connection', function(socket) {
     socket.on('chat_message', function(message) {
         io.emit('chat_message', '<strong>' + socket.username + '</strong>: ' + message);
     });
+});
 
+http.listen(port, function(){
+  console.log('listening on *:' + port);
 });
